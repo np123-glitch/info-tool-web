@@ -1,4 +1,4 @@
-﻿namespace ZoaReference.Features.VnasData.Models;
+﻿namespace ZmaReference.Features.VnasData.Models;
 
 public class FacilityExtended(Facility facility, IEnumerable<VideoMap> videoMaps)
 {

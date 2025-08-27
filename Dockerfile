@@ -14,18 +14,18 @@ RUN curl -fsSL https://deb.nodesource.com/setup_21.x | bash - \
 WORKDIR /src
 COPY package*.json .
 RUN npm ci
-COPY ["ZoaReference.csproj", "./"]
-RUN dotnet restore "ZoaReference.csproj"
+COPY ["ZmaReference.csproj", "./"]
+RUN dotnet restore "ZmaReference.csproj"
 COPY . .
-RUN dotnet build "ZoaReference.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "ZmaReference.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "ZoaReference.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "ZmaReference.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 RUN apt-get update \
     && apt-get install -y wget curl
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ZoaReference.dll"]
+ENTRYPOINT ["dotnet", "ZmaReference.dll"]

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace ZoaReference.Features.Healthcheck.UI.Pages;
+namespace ZmaReference.Features.Healthcheck.UI.Pages;
 
 [ApiController]
 [Route("api/v1/[controller]")]

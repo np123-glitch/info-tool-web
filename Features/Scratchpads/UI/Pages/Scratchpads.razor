@@ -1,13 +1,13 @@
 ﻿@page "/scratchpads"
-@using ZoaReference.Features.Scratchpads.Models
-@using ZoaReference.Features.Scratchpads.Repositories
+@using ZmaReference.Features.Scratchpads.Models
+@using ZmaReference.Features.Scratchpads.Repositories
 @rendermode InteractiveServer
 
 @inject IJSRuntime Js
 @inject ScratchpadsRepository ScratchpadRepository
 @inject ProtectedSessionStorage ProtectedSessionStore
 
-<PageTitle>Scratchpads - ZOA Reference</PageTitle>
+<PageTitle>Scratchpads - ZMA Reference</PageTitle>
 
 <div class="ml-1 mb-4">
     <select @ref="_dropdown" @bind:get="_selectedFacilityId" @bind:set="UpdateSelectedFacility"

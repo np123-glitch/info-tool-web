@@ -1,9 +1,9 @@
 ﻿using Coravel.Scheduling.Schedule.Interfaces;
-using ZoaReference.Features.Docs.Repositories;
-using ZoaReference.Features.Docs.ScheduledJobs;
-using ZoaReference.FeatureUtilities.Interfaces;
+using ZmaReference.Features.Docs.Repositories;
+using ZmaReference.Features.Docs.ScheduledJobs;
+using ZmaReference.FeatureUtilities.Interfaces;
 
-namespace ZoaReference.Features.Docs;
+namespace ZmaReference.Features.Docs;
 
 public class DocsModule : IServiceConfigurator, ISchedulerConfigurator
 {

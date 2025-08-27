@@ -1,13 +1,13 @@
 ﻿@page "/procedures"
 @using Microsoft.Extensions.Options
-@using ZoaReference.Features.Docs.Repositories
+@using ZmaReference.Features.Docs.Repositories
 @rendermode InteractiveServer
 
 @inject DocumentRepository DocumentRepository
 @inject IOptionsMonitor<AppSettings> AppSettings
 @inject ProtectedSessionStorage ProtectedSessionStore
 
-<PageTitle>Procedures - ZOA Reference</PageTitle>
+<PageTitle>Procedures - ZMA Reference</PageTitle>
 
 <div>
     <select @bind="_displayedPdfUrl" @bind:after="UpdateStoredUrl" class="p-2 bg-gray-700 text-gray-100 w-[600px]">

@@ -1,8 +1,8 @@
 ﻿@page "/charts/{airportId?}"
 @using System.Text.RegularExpressions
 @using Microsoft.Extensions.Options
-@using ZoaReference.Features.Charts.Models
-@using ZoaReference.Features.Charts.Services
+@using ZmaReference.Features.Charts.Models
+@using ZmaReference.Features.Charts.Services
 @rendermode InteractiveServer
 
 @inject AviationApiChartService AviationApiChartService
@@ -10,7 +10,7 @@
 @inject ProtectedSessionStorage ProtectedSessionStore
 @inject IJSRuntime Js
 
-<PageTitle>Charts - ZOA Reference</PageTitle>
+<PageTitle>Charts - ZMA Reference</PageTitle>
 
 <SectionContent SectionName="sub-nav">
     <div class="bg-slate-900 flex items-center gap-2 px-2 py-0.5 flex-wrap">

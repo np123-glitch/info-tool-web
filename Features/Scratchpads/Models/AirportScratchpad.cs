@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace ZoaReference.Features.Scratchpads.Models;
+namespace ZmaReference.Features.Scratchpads.Models;
 
 public record AirportScratchpad(
     [property: JsonPropertyName("id")] string Id,

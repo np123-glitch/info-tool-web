@@ -1,6 +1,6 @@
 ﻿services:
-  zoareference:
-    image: zoareference
+  zmareference:
+  image: zmareference
     build:
       context: .
       dockerfile: Dockerfile

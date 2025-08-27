@@ -1,9 +1,9 @@
 ﻿using Coravel.Invocable;
 using Microsoft.Extensions.Options;
-using ZoaReference.Features.Docs.Models;
-using ZoaReference.Features.Docs.Repositories;
+using ZmaReference.Features.Docs.Models;
+using ZmaReference.Features.Docs.Repositories;
 
-namespace ZoaReference.Features.Docs.ScheduledJobs;
+namespace ZmaReference.Features.Docs.ScheduledJobs;
 
 public class FetchAndStoreDocs(ILogger<FetchAndStoreDocs> logger, IHttpClientFactory httpClientFactory, IWebHostEnvironment webHostEnvironment, IOptionsMonitor<AppSettings> appSettings, DocumentRepository documentRepository) : IInvocable
 {
@@ -14,26 +14,26 @@ public class FetchAndStoreDocs(ILogger<FetchAndStoreDocs> logger, IHttpClientFac
 
         try
         {
-            logger.LogInformation("Fetching ZOA docs from {url}",
-                appSettings.CurrentValue.Urls.ZoaDocumentsApiEndpoint);
-            var fetchedDocCategories = await client.GetFromJsonAsync<List<ZoaDocumentCategory>>(appSettings.CurrentValue.Urls.ZoaDocumentsApiEndpoint);
+                    logger.LogInformation("Fetching ZMA docs from {url}",
+            appSettings.CurrentValue.Urls.ZmaDocumentsApiEndpoint);
+        var fetchedDocCategories = await client.GetFromJsonAsync<List<ZoaDocumentCategory>>(appSettings.CurrentValue.Urls.ZmaDocumentsApiEndpoint);
             if (fetchedDocCategories is not null)
             {
                 compiledDocCategories.AddRange(fetchedDocCategories.Select(c => c.ToGenericDocumentCategory()));
             }
             else
             {
-                logger.LogInformation("Fetched ZOA documents null or zero");
+                logger.LogInformation("Fetched ZMA documents null or zero");
             }
 
             var customDocCategories = appSettings.CurrentValue.CustomDocuments;
             compiledDocCategories.AddRange(customDocCategories.Select(c => c.ToGenericDocumentCategory()));
 
-            logger.LogInformation("Successfully fetched ZOA and custom docs");
+            logger.LogInformation("Successfully fetched ZMA and custom docs");
         }
         catch (Exception e)
         {
-            logger.LogError("Error while fetching ZOA docs: {ex}", e.ToString());
+            logger.LogError("Error while fetching ZMA docs: {ex}", e.ToString());
         }
 
         var tasks = new List<Task>();
