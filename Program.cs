@@ -15,7 +15,10 @@ builder.Services.AddControllers();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = builder.Environment.IsDevelopment();
+    });
 
 // Add the global App Settings class to DI container
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection(AppSettings.SectionKeyName));
