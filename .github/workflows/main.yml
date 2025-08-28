@@ -2,9 +2,9 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   workflow_dispatch:
-  
+
 permissions:
   contents: read
   packages: write
@@ -13,22 +13,31 @@ jobs:
   build-docker-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout master
-        uses: actions/checkout@v2
-      - name: Log in to container registry
-        uses: docker/login-action@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push image
-        uses: docker/build-push-action@v2
+
+      - name: Compute image name (lowercase owner)
+        id: meta
+        run: |
+          echo "OWNER_LC=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          echo "IMAGE=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/info-tool-web" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
         with:
           push: true
           tags: |
-            ghcr.io/vzma/info-tool-web:${{ github.sha }}
-            ghcr.io/vzma/info-tool-web:master
-            ghcr.io/vzma/info-tool-web:latest
+            ${{ steps.meta.outputs.IMAGE }}:${{ github.sha }}
+            ${{ steps.meta.outputs.IMAGE }}:master
+            ${{ steps.meta.outputs.IMAGE }}:latest
+
   deploy-docker-image:
     needs: build-docker-image
     runs-on: ubuntu-latest
@@ -41,9 +50,10 @@ jobs:
       - name: Log into K8s cluster
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8s-zma-website
 
-      - name: Set image name
+      - name: Compute image name (lowercase owner)
         id: meta
-        run: echo "IMAGE=ghcr.io/${{ github.repository_owner }}/info-tool-web" >> $GITHUB_OUTPUT
+        run: |
+          echo "IMAGE=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/info-tool-web" >> $GITHUB_OUTPUT
 
       - name: Deploy image to cluster
         run: kubectl set image deployment/info-tool-web info-tool-web=${{ steps.meta.outputs.IMAGE }}:${{ github.sha }} --record -n zma-web-stack
