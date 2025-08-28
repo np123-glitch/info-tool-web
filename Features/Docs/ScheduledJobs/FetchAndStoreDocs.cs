@@ -14,84 +14,57 @@ public class FetchAndStoreDocs(ILogger<FetchAndStoreDocs> logger, IHttpClientFac
 
         try
         {
-                    logger.LogInformation("Fetching ZMA docs from {url}",
-            appSettings.CurrentValue.Urls.ZmaDocumentsApiEndpoint);
-        var fetchedDocCategories = await client.GetFromJsonAsync<List<ZoaDocumentCategory>>(appSettings.CurrentValue.Urls.ZmaDocumentsApiEndpoint);
-            if (fetchedDocCategories is not null)
+            logger.LogInformation("Fetching ZMA docs from {url}",
+                appSettings.CurrentValue.Urls.ZmaDocumentsApiEndpoint);
+            var apiResponse = await client.GetFromJsonAsync<ZmaDocumentsApiResponse>(appSettings.CurrentValue.Urls.ZmaDocumentsApiEndpoint);
+            
+            if (apiResponse?.Data is not null && apiResponse.RetDet.Code == 200)
             {
-                compiledDocCategories.AddRange(fetchedDocCategories.Select(c => c.ToGenericDocumentCategory()));
+                // Filter out unwanted categories and sort by priority
+                var filteredAndSortedCategories = apiResponse.Data
+                    .Where(c => c.Name is "eloa" or "iloa" or "mfr" or "references" or "training")
+                    .Select(c => c.ToGenericDocumentCategory())
+                    .OrderBy(c => GetCategorySortOrder(c.Name))
+                    .ToList();
+
+                compiledDocCategories.AddRange(filteredAndSortedCategories);
+                logger.LogInformation("Successfully fetched {count} document categories from ZMA API: {categories}", 
+                    filteredAndSortedCategories.Count, 
+                    string.Join(", ", filteredAndSortedCategories.Select(c => c.Name)));
             }
             else
             {
-                logger.LogInformation("Fetched ZMA documents null or zero");
+                logger.LogWarning("Fetched ZMA documents null, zero, or API returned error code: {code}", apiResponse?.RetDet.Code ?? -1);
             }
 
-            var customDocCategories = appSettings.CurrentValue.CustomDocuments;
-            compiledDocCategories.AddRange(customDocCategories.Select(c => c.ToGenericDocumentCategory()));
+            var customDocCategories = appSettings.CurrentValue.CustomDocuments
+                .Where(c => c.Name != "Quick Reference") // Filter out Quick Reference
+                .Select(c => c.ToGenericDocumentCategory());
+            compiledDocCategories.AddRange(customDocCategories);
 
-            logger.LogInformation("Successfully fetched ZMA and custom docs");
+            logger.LogInformation("Successfully fetched ZMA and custom docs. Final categories: {categories}", 
+                string.Join(", ", compiledDocCategories.Select(c => c.Name)));
         }
         catch (Exception e)
         {
             logger.LogError("Error while fetching ZMA docs: {ex}", e.ToString());
         }
 
-        var tasks = new List<Task>();
-        foreach (var category in compiledDocCategories)
-        {
-            foreach (var doc in category.Documents)
-            {
-                var pdfName = GetPdfNameFromUrl(doc.Url);
-                var localPdfPath = Path.ChangeExtension(Path.Combine(PdfFolderPath, pdfName), ".pdf");
-
-                // Always write new file
-                try
-                {
-                    var task = WriteRemotePdfToLocal(doc.Url, localPdfPath);
-                    tasks.Add(task);
-                    logger.LogInformation("Found pdf at {url} and writing at {path}", doc.Url, localPdfPath);
-                }
-                catch (Exception e)
-                {
-                    logger.LogWarning("Could not write PDF from {url} at {path}. Error: {e}", doc.Url, localPdfPath, e);
-                }
-            }
-        }
-
-        await Task.WhenAll(tasks);
+        logger.LogInformation("Using direct PDF URLs - no local storage needed");
         documentRepository.ClearAllDocumentCategories();
         documentRepository.AddDocumentCategories(compiledDocCategories);
     }
 
-    private string PdfFolderPath => Path.Combine(webHostEnvironment.WebRootPath, appSettings.CurrentValue.DocumentsPdfPath);
-
-    private static string GetPdfNameFromUrl(string url)
+    private static int GetCategorySortOrder(string categoryName)
     {
-        var uri = new Uri(url);
-        return Path.GetFileName(uri.AbsolutePath);
-    }
-
-    private async Task WriteRemotePdfToLocal(string url, string path)
-    {
-        try
+        return categoryName switch
         {
-            var client = httpClientFactory.CreateClient();
-            await using var pdfStream = await client.GetStreamAsync(url);
-
-            var dirPath = Path.GetDirectoryName(path);
-            if (dirPath is not null && !Directory.Exists(dirPath))
-            {
-                Directory.CreateDirectory(dirPath);
-            }
-
-            await using var pdfNewFile = File.Create(path);
-            await pdfStream.CopyToAsync(pdfNewFile);
-            logger.LogInformation("Wrote new PDF to {path}", path);
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Error while fetching PDF from {url}: {ex}", url, e);
-        }
-
+            "Directive Documents" => 1,  // D## documents first
+            "Ext. LOAs" => 2,           // L## documents second
+            "Int. LOAs" => 3,           // L## documents second
+            "References" => 4,          // References third
+            "Training" => 5,            // Training documents last
+            _ => 999                    // Any other categories at the end
+        };
     }
 }

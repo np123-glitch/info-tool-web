@@ -2,7 +2,7 @@
 
 namespace ZmaReference.Features.Docs.Models;
 
-public record ZoaDocument
+public record ZmaDocument
 {
     [JsonPropertyName("name")]
     public string Name { get; set; } = "";
@@ -15,4 +15,7 @@ public record ZoaDocument
 
     [JsonPropertyName("url")]
     public string Url { get; set; } = "";
+
+    [JsonPropertyName("permalink")]
+    public string Permalink { get; set; } = "";
 }

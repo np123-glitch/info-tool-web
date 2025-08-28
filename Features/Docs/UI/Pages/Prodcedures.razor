@@ -16,7 +16,14 @@
             <optgroup label="@category.Name" class="text-gray-400">
                 @foreach (var doc in category.Documents)
                 {
-                    <option value="@MakePdfPath(doc.Url)" class="text-gray-100">@doc.Name</option>
+                    @if (!string.IsNullOrEmpty(doc.Url))
+                    {
+                        <option value="@doc.Url" class="text-gray-100">@doc.Name</option>
+                    }
+                    else
+                    {
+                        <option disabled class="text-gray-500">@doc.Name (No PDF available)</option>
+                    }
                 }
             </optgroup>
         }
@@ -26,7 +33,17 @@
 {
     <div class="grow flex items-stretch">
         <div class="w-full mt-2">
-            <object class="pt-1 h-full w-full" type="application/pdf" data="@_displayedPdfUrl"></object>
+            <!-- Embed PDF directly from URL using iframe -->
+            <iframe class="pt-1 h-full w-full" src="@_displayedPdfUrl" frameborder="0">
+                <div class="flex flex-col items-center justify-center h-full text-gray-300">
+                    <p class="mb-4">Unable to display PDF in browser.</p>
+                    <div class="flex gap-4">
+                        <a href="@_displayedPdfUrl" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Open PDF in New Tab
+                        </a>
+                    </div>
+                </div>
+            </iframe>
         </div>
     </div>
 }
@@ -40,27 +57,33 @@
         if (firstRender)
         {
             var savedStateTask = await ProtectedSessionStore.GetAsync<string>("proceduresPdfUrl");
-            if (!savedStateTask.Success || savedStateTask.Value is null)
+            if (savedStateTask.Success && savedStateTask.Value is not null)
             {
-                return;
+                _displayedPdfUrl = savedStateTask.Value;
+                StateHasChanged();
             }
-
-            _displayedPdfUrl = savedStateTask.Value;
-            StateHasChanged();
+            else
+            {
+                // Set default selection to first available document
+                var firstDocument = DocumentRepository.Categories
+                    .SelectMany(c => c.Documents)
+                    .FirstOrDefault(d => !string.IsNullOrEmpty(d.Url));
+                
+                if (firstDocument != null)
+                {
+                    _displayedPdfUrl = firstDocument.Url;
+                    await UpdateStoredUrl();
+                    StateHasChanged();
+                }
+            }
         }
     }
 
-    private static string GetPdfNameFromUrl(string url)
-    {
-        var uri = new Uri(url);
-        return Path.GetFileName(uri.AbsolutePath);
-    }
 
-    private string MakePdfPath(string url)
-    {
-        var name = GetPdfNameFromUrl(url);
-        return $"{AppSettings.CurrentValue.DocumentsPdfPath}/{name}.pdf";
-    }
+
+
+
+
 
     private async Task UpdateStoredUrl()
     {

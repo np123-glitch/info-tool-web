@@ -48,7 +48,7 @@ public class AppSettings
         public string VatspyData { get; set; } = string.Empty;
         public string LocalAirpotsDat{ get; set; } = string.Empty;
         public string LoaFile { get; set; } = string.Empty;
-        public string ZoaDocumentsApiEndpoint { get; set; } = string.Empty;
+        public string ZmaDocumentsApiEndpoint { get; set; } = string.Empty;
         public string ScratchpadsJson { get; set; } = string.Empty;
         public string CskoRouteBase { get; set; } = string.Empty;
     }
