@@ -37,9 +37,16 @@ jobs:
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
       - name: Log into K8s cluster
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8s-zma-website
+
+      - name: Set image name
+        id: meta
+        run: echo "IMAGE=ghcr.io/${{ github.repository_owner }}/info-tool-web" >> $GITHUB_OUTPUT
+
       - name: Deploy image to cluster
-        run: kubectl set image deployment/info-tool-web info-tool-web=ghcr.io/vzma/info-tool-web:${{ github.sha }} --record -n zma-web-stack
+        run: kubectl set image deployment/info-tool-web info-tool-web=${{ steps.meta.outputs.IMAGE }}:${{ github.sha }} --record -n zma-web-stack
+
       - name: Verify deployment
         run: kubectl rollout status deployment/info-tool-web -n zma-web-stack
