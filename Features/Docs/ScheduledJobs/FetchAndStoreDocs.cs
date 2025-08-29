@@ -60,9 +60,9 @@ public class FetchAndStoreDocs(ILogger<FetchAndStoreDocs> logger, IHttpClientFac
         return categoryName switch
         {
             "Directive Documents" => 1,  // D## documents first
-            "Ext. LOAs" => 2,           // L## documents second
-            "Int. LOAs" => 3,           // L## documents second
-            "References" => 4,          // References third
+            "Int. LOAs" => 2,           // Internal LOAs second
+            "Ext. LOAs" => 3,           // External LOAs third
+            "References" => 4,          // References fourth
             "Training" => 5,            // Training documents last
             _ => 999                    // Any other categories at the end
         };
